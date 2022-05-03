@@ -1,0 +1,6 @@
+function out = floris_pwr(wind_speed,density,wind_direction,...
+    turbine_centres,yaw_angles,diameter,power_curve,location)
+     [pwr,~] = floris(wind_speed,density,wind_direction,...
+     turbine_centres,yaw_angles,diameter,power_curve,location);
+     out = sum(pwr);
+end
