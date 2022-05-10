@@ -1,8 +1,9 @@
-function wind_spd_array = flow_field_eval(farm_size, wind_direction, turbine_centres,...
+function wind_spd_array = flow_field_eval(ff_res, farm_size, wind_direction, turbine_centres,...
                                             yaw, diameters)
 
-load(".\results.mat",'params');
-ff_res = params.farm.ff_res;
+load(".\params.mat",'params');
+wind_speed = params.env.wind_speed;
+
 
 %create mesh and plot evaluation of FLORIS for wind speeds at optimised yaw
 %positions
@@ -33,7 +34,7 @@ coords(:,2) = reshape(Y,1,numel(Y));
 coords(:,3) = zeros;
 %This returns an array ff_res x ff_res,
 
-[~,spd] = floris(params.env.wind_speed,params.env.density,wind_direction,...
+[~,spd] = floris(wind_speed,params.env.density,wind_direction,...
          turbine_centres,yaw, diameters,params.turb.power_curve,coords);
 
 

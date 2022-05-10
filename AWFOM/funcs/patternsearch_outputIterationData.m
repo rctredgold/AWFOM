@@ -16,7 +16,7 @@ switch flag
 
         % set output of state values to the current field , and set counter
         % for table row to the solver iteration value
-        load("results.mat", "params");
+        load("params.mat", "params");
         case_id = params.results.caseID;
         i = optimvalues.iteration;
                 
@@ -24,10 +24,10 @@ switch flag
         params.results.(case_id(1)).(case_id(2)).state_vals.fval(i+1) = optimvalues.fval;
         params.results.(case_id(1)).(case_id(2)).state_vals.funccount(i+1) = optimvalues.funccount;
         params.results.(case_id(1)).(case_id(2)).state_vals.yaw_angles(:,i+1) = optimvalues.x;
-        save("results.mat", "params")
+        save("params.mat", "params")
 
     case 'iter'
-        load("results.mat", "params");
+        load("params.mat", "params");
         case_id = params.results.caseID;
         i = optimvalues.iteration;
                 
@@ -35,11 +35,11 @@ switch flag
         params.results.(case_id(1)).(case_id(2)).state_vals.fval(i+1) = optimvalues.fval;
         params.results.(case_id(1)).(case_id(2)).state_vals.funccount(i+1) = optimvalues.funccount;
         params.results.(case_id(1)).(case_id(2)).state_vals.yaw_angles(:,i+1) = optimvalues.x;
-        save("results.mat", "params")
+        save("params.mat", "params")
     
     case 'interrupt'
     case 'done'
-        load("results.mat", "params");
+        load("params.mat", "params");
         case_id = params.results.caseID;
         i = optimvalues.iteration;
         
@@ -48,7 +48,7 @@ switch flag
         params.results.(case_id(1)).(case_id(2)).state_vals.fval(i+1) = optimvalues.fval;
         params.results.(case_id(1)).(case_id(2)).state_vals.funccount(i+1) = optimvalues.funccount;
         params.results.(case_id(1)).(case_id(2)).state_vals.yaw_angles(:,i+1) = optimvalues.x;
-        save("results.mat", "params")       
+        save("params.mat", "params")       
     otherwise
 end
 

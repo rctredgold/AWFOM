@@ -2,8 +2,8 @@ function success = convert_globcon(filename)
 
 %set succesful exit flag to 0, where it will change to 1 upon a succesful
 %matrix creation
-
 success = 0;
+%filename = "params.mat";
 
 load(filename,'params')
 
@@ -58,11 +58,16 @@ if eql_n >= 1
         %populate each column with the first value, n_turb times
         single_yaw = yaw_init(1,i);
         yaw_init(:,i) = single_yaw.*ones(n_turb,1);
+        yaw_init_cell{i} = yaw_init(:,i);
+        diameters_cell{i} = diameters*ones(size(yaw_init,1));
+        lb_cell{i} = lb*ones(size(yaw_init,1));
+        ub_cell{i} = ub*ones(size(yaw_init,1));
 
     end
-lb = lb*ones(size(yaw_init,1));
-ub = ub*ones(size(yaw_init,1));
-diameters = diameters*ones(size(yaw_init,1));
+yaw_init = yaw_init_cell;
+lb = lb_cell;
+ub = ub_cell;
+diameters = diameters_cell;
 success = 1;
 
 %normally distributed starting values
@@ -70,23 +75,33 @@ elseif rnd_n >= 1
     yaw_init = zeros(n_turb,rnd_n);
     for i = 1:rnd_n
             yaw_init(:,i) = normrnd(mu,sigma(i),n_turb,1);
-            yaw_init(:,i) = min(max(yaw_init(:,i),lb),ub);
+            yaw_init_cell{i} = min(max(yaw_init(:,i),lb),ub);
+            diameters_cell{i} = diameters*ones(size(yaw_init,1));
+            lb_cell{i} = lb*ones(size(yaw_init,1));
+            ub_cell{i} = ub*ones(size(yaw_init,1));
     end
-lb = lb*ones(size(yaw_init,1));
-ub = ub*ones(size(yaw_init,1));
-diameters = diameters*ones(size(yaw_init,1));
+yaw_init = yaw_init_cell;
+lb = lb_cell;
+ub = ub_cell;
+diameters = diameters_cell;
 success = 1;
 
 elseif (eql_n + rnd_n) < 1
         if wdsweep_n > 0
         case_it = wdsweep_n;
-        yaw_init = zeros(n_turb,case_it);
+        yaw_init_cell{1} = zeros(n_turb,case_it);
+        diameters_cell{i} = diameters*ones(size(yaw_init,1));
+        lb_cell{i} = lb*ones(size(yaw_init,1));
+        ub_cell{i} = ub*ones(size(yaw_init,1));
         end
 
+
+yaw_init = yaw_init_cell;
+lb = lb_cell;
+ub = ub_cell;
+diameters = diameters_cell;
+
 success = 1;
-lb = lb*ones(size(yaw_init,1));
-ub = ub*ones(size(yaw_init,1));
-diameters = diameters*ones(size(yaw_init,1));
 end
 
 
@@ -122,7 +137,7 @@ elseif farmsz_n >= 1
         for i =1:case_it
         fs = size(turbine_centres{i},1);             
         fs_yaw_init{i} = normrnd(mu,sigma(i),fs,1);
-        fs_yaw_init{i} = min(max(cell2mat(fs_yaw_init{i}),lb),ub);
+        fs_yaw_init{i} = min(max(cell2mat(fs_yaw_init(i)),lb),ub);
         fs_ub{i} = ub*ones(fs,1);
         fs_lb{i} = lb*ones(fs,1);
         fs_diam{i} = diameters*ones(fs,1);
@@ -139,8 +154,8 @@ elseif farmsz_n >= 1
     lb = fs_lb;
 else
     success = 0;
+    return
 end
-%write the value of yaw_init into params.globcon
 
 
 %% IF CONVERSION IS SUCCESFUL, SET UPPER AND LOWER BOUNDS AND SAVE TO PARAMS.MAT
@@ -155,4 +170,5 @@ params.globcon.lb = lb;
 save(filename, 'params');
 else
     return
+end
 end

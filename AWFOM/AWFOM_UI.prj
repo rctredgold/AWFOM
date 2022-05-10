@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.apptool" plugin-version="1.0">
-  <configuration build-checksum="3538736398" file="C:\Users\rctre\Documents\AWFOM\AWFOM_UI.prj" location="C:\Users\rctre\Documents\AWFOM" name="AWFOM_UI" target="target.mlapps" target-name="Package App">
+  <configuration build-checksum="3956162321" file="C:\Users\rctre\Documents\AWFOM\AWFOM_UI.prj" location="C:\Users\rctre\Documents\AWFOM" name="AWFOM_UI" target="target.mlapps" target-name="Package App">
     <param.appname>AWFOM_UI</param.appname>
     <param.authnamewatermark />
     <param.email />
@@ -8,14 +8,14 @@
     <param.icons />
     <param.summary />
     <param.description />
-    <param.screenshot>C:\Users\rctre\AppData\Local\Temp\tpe481fcc9_c161_44da_a4eb_44dd8ee6886c.png</param.screenshot>
+    <param.screenshot>C:\Users\rctre\AppData\Local\Temp\tp3fbe7497_a34d_4c88_8eb7_15324d051f93.png</param.screenshot>
     <param.version>1.0</param.version>
     <param.products.name />
     <param.products.id />
     <param.products.version />
     <param.platforms />
     <param.output>${PROJECT_ROOT}</param.output>
-    <param.guid>b2d942e5-21bd-40b4-917a-c9b4c18e54c9</param.guid>
+    <param.guid>cb1b1413-97ba-4d12-9fc6-0567bf5e11e3</param.guid>
     <unset>
       <param.authnamewatermark />
       <param.email />
@@ -42,7 +42,7 @@
       <file>${PROJECT_ROOT}\AWFOM_solveropts.mlapp</file>
       <file>${PROJECT_ROOT}\formatted_results.mat</file>
       <file>${PROJECT_ROOT}\params.mat</file>
-      <file>${PROJECT_ROOT}\results.mat</file>
+      <file>${PROJECT_ROOT}\temp_params.mat</file>
     </fileset.depfun>
     <fileset.resources />
     <fileset.package />

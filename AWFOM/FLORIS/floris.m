@@ -52,6 +52,7 @@ end
 [size1, size2]=size(yaw_angles);
 nturbs=max(size1,size2);
 yaw_rads=yaw_angles*pi/180;
+
 [nlocs,~]=size(location);
 
 %% PREPROCESSING
@@ -254,7 +255,11 @@ for iloc=1:nlocs
         %Root sum square for deficits
         speed(iloc)=wind_speed-udeficit/ii; 
     end
-    
+    % for irregular farm layouts, floris was occasionally throqing out v.
+    % large negative wind speed values
+    if speed(iloc) < 0
+        speed(iloc) = 0;
+    end
 end
 
 end
@@ -333,7 +338,7 @@ end
 
 
 function afactor=inductionFactor(cp,hi_dl,psi)
-sols=roots([4 -8 4 psi*-cp]);
+sols=roots([4 -8 4 -psi*cp]);
 sols=sort(sols);
 
 if hi_dl == 1 || hi_dl == 2
@@ -346,6 +351,10 @@ end
 if afactor > 0.5
     afactor = 0.5;
 end
+
+if afactor < 0
+    afactor = 0;
+end
 end
 
 function [ywake,zwake]=wakecentre(x,a,yawrads,xt,yt,zt,d)
@@ -353,14 +362,14 @@ kd= 0.15; %0.15;
 ad= -3;
 %ad = -0.003;
 bd= -0.01;
-% % use Buhls equation to find ct
-% f = 0.9;
-% if (a >= 0) && (a <= 0.4)
-%     ct= 4.0*a*f*(1.0-a);
-% else
-%     ct = 0.8889 +  ((4*f -4.4444)*a) + ((5.5556 - 4*f)*(a^2));    
-% end
-ct= 4.0*a*(1.0-a);
+% use Buhls equation to find ct
+f = 0.9;
+if (a >= 0) && (a <= 0.4)
+    ct= 4.0*a*f*(1.0-a);
+else
+    ct = 0.8889 +  ((4*f -4.4444)*a) + ((5.5556 - 4*f)*(a^2));    
+end
+%ct= 4.0*a*(1.0-a);
 wakeangle=0.5*(cos(yawrads))^2*sin(yawrads)*ct;
 yawoff=(2.0*kd*(x-xt)/d)+1.0;
 yawoff=wakeangle*(15.0*yawoff^4+wakeangle^2);
@@ -401,7 +410,7 @@ switch(q)
 end
 au= 5.15;
 bu= 1.7;%1.66;
-m=mu/cos(au+(bu*gam));
+m=mu/cos(au+(bu*abs(gam)));
 vwake=(d/(d+2.0*ke*m*(x-xturb)))^2;
 end
 

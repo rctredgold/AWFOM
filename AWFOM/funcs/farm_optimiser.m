@@ -10,19 +10,14 @@ use_globalsearch = solver_selection(4);
 use_simulannealbnd = solver_selection(5);
 use_surrogateopt = solver_selection(6);
 
-%clear results from any previous cases
-load("results.mat", 'params');
-if isfield(params,'results') == 1
-params = rmfield(params,"results");
-save("results.mat", 'params');
-end
-
 %load farm settings and clear results folder
 load("params.mat",'params');
 if isfield(params,'results') == 1
 params = rmfield(params,"results");
 save("params.mat", 'params');
 end
+
+
 
 n_turb = params.farm.n_turb;
 wind_speed = params.env.wind_speed;
@@ -75,13 +70,21 @@ if use_fmincon == 1
 
     if farmsz_n > 0
         turbine_centres = cell2mat(params.globcon.turbine_centres(p));
-        yaw_angles = cell2mat(params.globcon.yaw_init(p));
-        ub = cell2mat(params.globcon.ub(p));
-        lb = cell2mat(params.globcon.lb(p));
-        diameter = cell2mat(params.turb.diameters(p));
+        if params.globcon.sortlocs == 1
+            turbine_centres = sortlocs(turbine_centres, wind_direction);
+            params.globcon.turbine_centres{p} = turbine_centres;
+        end
     else
-        yaw_angles = x0(:,p);
+        if params.globcon.sortlocs == 1
+            turbine_centres = sortlocs(turbine_centres, wind_direction);
+            params.farm.turbine_centres = turbine_centres;
+        end
     end
+    
+    yaw_angles = cell2mat(params.globcon.yaw_init(p));
+    ub = cell2mat(params.globcon.ub(p));
+    lb = cell2mat(params.globcon.lb(p));
+    diameter = cell2mat(params.turb.diameters(p));
 
     objective = @(yaw_angles)-floris_pwr(wind_speed,density,wind_direction,...
     turbine_centres,yaw_angles,diameter,power_curve,locations);
@@ -92,9 +95,9 @@ if use_fmincon == 1
     params.results.fmincon.(r_n).power_initial = floris_pwr(wind_speed,density,wind_direction,...
     turbine_centres,yaw_angles,diameter,power_curve,locations);
     
-    save("results.mat", "params");
+    save("params.mat", "params");
     [yaw_optimal_fmincon, power_optimal, exit_flag, output] = fmincon(objective, yaw_angles,[],[],[],[], lb, ub,[],fmincon_options);
-    load("results.mat", "params");
+    load("params.mat", "params");
     
     params.results.fmincon.(r_n).yaw_optimal = yaw_optimal_fmincon;
     params.results.fmincon.(r_n).power_optimal = power_optimal;
@@ -111,7 +114,7 @@ if use_fmincon == 1
     params.results.fmincon.(r_n).turbine_centres = turbine_centres;
     params.results.fmincon.(r_n).diameters = diameter;
     
-    save("results.mat", "params");
+    save("params.mat", "params");
     
 
     msg = strcat(params.results.caseID{1},{' '},'reached stopping constraints for case',{' '},...
@@ -140,13 +143,21 @@ if use_patternsearch == 1
 
     if farmsz_n > 0
         turbine_centres = cell2mat(params.globcon.turbine_centres(p));
-        yaw_angles = cell2mat(params.globcon.yaw_init(p));
-        ub = cell2mat(params.globcon.ub(p));
-        lb = cell2mat(params.globcon.lb(p));
-        diameter = cell2mat(params.turb.diameters(p));
+        if params.globcon.sortlocs == 1
+            turbine_centres = sortlocs(turbine_centres, wind_direction);
+            params.globcon.turbine_centres{p} = turbine_centres;
+        end
     else
-        yaw_angles = x0(:,p);
+        if params.globcon.sortlocs == 1
+            turbine_centres = sortlocs(turbine_centres, wind_direction);
+            params.farm.turbine_centres = turbine_centres;
+        end
     end
+
+    yaw_angles = cell2mat(params.globcon.yaw_init(p));
+    ub = cell2mat(params.globcon.ub(p));
+    lb = cell2mat(params.globcon.lb(p));
+    diameter = cell2mat(params.turb.diameters(p));
 
     objective = @(yaw_angles)-floris_pwr(wind_speed,density,wind_direction,...
     turbine_centres,yaw_angles,diameter,power_curve,locations);
@@ -157,9 +168,9 @@ if use_patternsearch == 1
     params.results.patternsearch.(r_n).power_initial = floris_pwr(wind_speed,density,wind_direction,...
     turbine_centres,yaw_angles,diameter,power_curve,locations);
 
-    save("results.mat", "params");
+    save("params.mat", "params");
     [yaw_optimal_patternsearch, power_optimal, exit_flag, output] = patternsearch(objective, yaw_angles,[],[],[],[], lb, ub,[], patternsearch_options);
-    load("results.mat", "params");
+    load("params.mat", "params");
 
     params.results.patternsearch.(r_n).yaw_optimal = yaw_optimal_patternsearch;
     params.results.patternsearch.(r_n).power_optimal = power_optimal;
@@ -173,7 +184,7 @@ if use_patternsearch == 1
     params.results.patternsearch.(r_n).turbine_centres = turbine_centres;
     params.results.patternsearch.(r_n).diameters = diameter;
 
-    save("results.mat", "params");
+    save("params.mat", "params");
 
 
    msg = strcat(params.results.caseID{1},{' '},'reached stopping constraints for case',{' '},...
@@ -191,7 +202,6 @@ end
 
 if use_particleswarm == 1
     load(".\optimisation\particleswarm_options.mat", 'particleswarm_options');
-    particleswarm_options.MaxIterations = params.globcon.psMaxIter*n_turb;    
     particleswarm_options.OutputFcn = @particleswarm_outputIterationData; 
 
     %if the user has selected a hybrid function then add it to the ps
@@ -216,21 +226,31 @@ if use_particleswarm == 1
 
     if farmsz_n > 0
         turbine_centres = cell2mat(params.globcon.turbine_centres(p));
-        yaw_angles = cell2mat(params.globcon.yaw_init(p));
-        ub = cell2mat(params.globcon.ub(p));
-        lb = cell2mat(params.globcon.lb(p));
-        diameter = cell2mat(params.turb.diameters(p));
+        if params.globcon.sortlocs == 1
+            turbine_centres = sortlocs(turbine_centres, wind_direction);
+            params.globcon.turbine_centres{p} = turbine_centres;
+        end
     else
-        yaw_angles = x0(:,p);
+        if params.globcon.sortlocs == 1
+            turbine_centres = sortlocs(turbine_centres, wind_direction);
+            params.farm.turbine_centres = turbine_centres;
+        end
     end
+
+    yaw_angles = cell2mat(params.globcon.yaw_init(p));
+    ub = cell2mat(params.globcon.ub(p));
+    lb = cell2mat(params.globcon.lb(p));
+    diameter = cell2mat(params.turb.diameters(p));
+
+    particleswarm_options.MaxIterations = params.globcon.psMaxIter*size(yaw_angles,1); 
 
     objective = @(yaw_angles)-floris_pwr(wind_speed,density,wind_direction,...
     turbine_centres,yaw_angles,diameter,power_curve,locations);
 
     
-    save("results.mat", "params");
-    [yaw_optimal_particleswarm, power_optimal, exit_flag, output] = particleswarm(objective, n_turb, lb, ub, particleswarm_options);
-    load("results.mat", "params");
+    save("params.mat", "params");
+    [yaw_optimal_particleswarm, power_optimal, exit_flag, output] = particleswarm(objective, size(yaw_angles,1), lb, ub, particleswarm_options);
+    load("params.mat", "params");
 
     params.results.particleswarm.(r_n).yaw_optimal = yaw_optimal_particleswarm';
     params.results.particleswarm.(r_n).power_optimal = power_optimal;
@@ -243,7 +263,7 @@ if use_particleswarm == 1
     params.results.particleswarm.(r_n).turbine_centres = turbine_centres;
     params.results.particleswarm.(r_n).diameters = diameter;
 
-    save("results.mat", "params");
+    save("params.mat", "params");
 
     msg = strcat(params.results.caseID{1},{' '},'reached stopping constraints for case',{' '},...
                  it_n,'/',string(case_iterations),{' '},'in',{' '},...
@@ -280,9 +300,9 @@ if use_globalsearch == 1
     gs_options.OutputFcn = @gs_outputIterationData;
     gs = GlobalSearch(gs_options);    
 
-    save("results.mat", "params");
+    save("params.mat", "params");
     [yaw_optimal_globalsearch, power_optimal] = run(gs, gslocal);
-    load("results.mat", "params");
+    load("params.mat", "params");
 
     params.results.globalsearch.(r_n).yaw_optimal = yaw_optimal_globalsearch';
     params.results.globalsearch.(r_n).power_optimal = power_optimal;
@@ -293,7 +313,7 @@ if use_globalsearch == 1
 
     params.results.globalsearch.(r_n).pwr_per_turb = floris(wind_speed,density,wind_direction,...
     turbine_centres,yaw_optimal_globalsearch,diameter,power_curve,locations)';
-    save("results.mat", "params");
+    save("params.mat", "params");
 
     msg = strcat(params.results.caseID{1},{' '},'reached stopping constraints for case',{' '},...
                  it_n,'/',string(case_iterations),{' '},'in',{' '},...
@@ -306,7 +326,7 @@ end
 
 
 %delete the caseID counter
-save("results.mat", "params");
+
 if isfield(params.results, 'caseID') == 1
     params.results = rmfield(params.results, "caseID");
 end
@@ -314,7 +334,8 @@ end
 if isfield(params.results, 'wind_speed_array') == 1
     params.results = rmfield(params.results, 'wind_speed_array');
 end
-save("results.mat", "params");
+
+save("params.mat", "params");
 
 pause(2)
 tx.Value = 'Optimisation Complete';

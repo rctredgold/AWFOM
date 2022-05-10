@@ -14,16 +14,38 @@ switch state
 
         % set output of state values to the current field , and set counter
         % for table row to the solver iteration value
-        load("results.mat", "params");
+        load("params.mat", "params");
         wind_speed = params.env.wind_speed;
         density = params.env.density;
         wind_direction = params.env.wind_direction;
-        diameter = params.turb.diameters;
         turbine_centres = params.farm.turbine_centres;
         power_curve = params.turb.power_curve;
         case_id = params.results.caseID;
+        wdsweep_n = params.globcon.wdsweep_n;
+        farmsz_n = params.globcon.farmsz_n;
+        p = case_id{2};
+        p = str2double(p(3:end));
 
         locations = [0 0 0];
+
+        if wdsweep_n > 0
+        wind_direction = params.globcon.wd_range(p);
+        end
+
+        if farmsz_n > 0
+            turbine_centres = cell2mat(params.globcon.turbine_centres(p));
+            if params.globcon.sortlocs == 1
+                turbine_centres = sortlocs(turbine_centres, wind_direction);
+                params.globcon.turbine_centres{p} = turbine_centres;
+            end
+        else
+            if params.globcon.sortlocs == 1
+                turbine_centres = sortlocs(turbine_centres, wind_direction);
+                params.farm.turbine_centres = turbine_centres;
+            end
+        end
+    
+        diameter = cell2mat(params.turb.diameters(p));
 
         i = OptimValues.iteration;
 
@@ -39,10 +61,10 @@ switch state
         params.results.(case_id(1)).(case_id(2)).state_vals.swarm(:,:,i+1) = OptimValues.swarm;
         params.results.(case_id(1)).(case_id(2)).state_vals.yaw_angles(:,i+1) = OptimValues.bestx;
         params.results.(case_id(1)).(case_id(2)).state_vals.swarmfvals(:,i+1) = OptimValues.swarmfvals;
-        save("results.mat", "params")
+        save("params.mat", "params")
 
     case 'iter'
-        load("results.mat", "params");
+        load("params.mat", "params");
         case_id = params.results.caseID;
         i = OptimValues.iteration;
                 
@@ -52,10 +74,10 @@ switch state
         params.results.(case_id(1)).(case_id(2)).state_vals.swarm(:,:,i+1) = OptimValues.swarm;
         params.results.(case_id(1)).(case_id(2)).state_vals.yaw_angles(:,i+1) = OptimValues.bestx;
         params.results.(case_id(1)).(case_id(2)).state_vals.swarmfvals(:,i+1) = OptimValues.swarmfvals;
-        save("results.mat", "params")
+        save("params.mat", "params")
 
     case 'done'
-        load("results.mat", "params");
+        load("params.mat", "params");
         case_id = params.results.caseID;
         i = OptimValues.iteration;
         
@@ -66,7 +88,7 @@ switch state
         params.results.(case_id(1)).(case_id(2)).state_vals.swarm(:,:,i+1) = OptimValues.swarm;
         params.results.(case_id(1)).(case_id(2)).state_vals.yaw_angles(:,i+1) = OptimValues.bestx;
         params.results.(case_id(1)).(case_id(2)).state_vals.swarmfvals(:,i+1) = OptimValues.swarmfvals;
-        save("results.mat", "params")       
+        save("params.mat", "params")       
     otherwise
 end
 

@@ -53,4 +53,5 @@ z = zeros(1,n_turb_max);
 
 
 locations = [x;y;z]';
+locations = sortlocs(locations, 0);
 end
